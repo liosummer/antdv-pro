@@ -85,6 +85,9 @@ export default defineConfig(({ mode }) => {
         },
       ],
     },
+    optimizeDeps:{
+      include: mode === "development" ? ['ant-design-vue/es/locale/en_US'] :[]
+    },
     build: {
       chunkSizeWarningLimit: 4096,
       rollupOptions: {
