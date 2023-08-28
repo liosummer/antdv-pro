@@ -41,6 +41,11 @@ const layoutProps = computed(() => pick(appStore.layoutSetting, ['fixedHeader', 
     <template #headerActions>
       <UserAvatar />
       <SelectLang />
+      <GithubLink />
+      <template v-if="!isMobile">
+        <GiteeLink />
+        <DocLink />
+      </template>
     </template>
     <template #contentPrefix>
       <MultiTab v-if="layoutSetting.multiTab" />
@@ -68,6 +73,7 @@ const layoutProps = computed(() => pick(appStore.layoutSetting, ['fixedHeader', 
     :keep-alive="layoutSetting.keepAlive"
     :accordion-mode="layoutSetting.accordionMode"
     v-bind="layoutProps"
+    :layout-setting="layoutSetting"
     @setting-change="appStore.changeSettingLayout"
   />
 </template>

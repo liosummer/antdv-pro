@@ -11,6 +11,7 @@ defineSlots<{
   content(props: any): any
   extraContent(props: any): any
   extra(props: any): any
+  footer(props: any): any
 }>()
 const layoutMenuStore = useLayoutMenu()
 const { menuDataMap, selectedKeys } = storeToRefs(layoutMenuStore)
@@ -91,6 +92,7 @@ const renderTitle = (title: VNodeChild | (() => VNodeChild)) => {
           </div>
         </div>
       </div>
+      <slot name="footer" />
     </div>
     <div :class="contentCls">
       <slot />

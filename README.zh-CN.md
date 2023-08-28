@@ -5,6 +5,10 @@
 
 </div>
 
+![gitee](https://gitee.com/antdv-pro/antdv-pro/badge/star.svg)
+![github](https://img.shields.io/github/stars/antdv-pro/antdv-pro?style=social)
+
+
 [English](./README.md) | **简体中文**
 
 
@@ -42,6 +46,10 @@ QQ群: [939791772](https://qm.qq.com/cgi-bin/qm/qr?k=dZMUtNNxv0BLxQwOoZwGQ7nR24G
 微信: [aibayanyu2022](https://u.wechat.com/MASIsAa8353Hi4e59-aBPaA)
 
 Discord: [discord](https://discord.gg/tPb4G6gXmm)
+
+### 微信群
+
+<img src="https://git.lingyu.org.cn/yanyu/images/raw/branch/main/wx-group.jpg" width="300">
 
 ## 使用
 

@@ -1,10 +1,12 @@
 import { AxiosError } from 'axios'
 import router from '~/router'
 import { useMetaTitle } from '~/composables/meta-title'
+import { setRouteEmitter } from '~@/utils/route-listener'
 const allowList = ['/login', '/error', '/401', '/404', '/403']
 const loginPath = '/login'
 
 router.beforeEach(async (to, _, next) => {
+  setRouteEmitter(to)
   // 获取
   const userStore = useUserStore()
   const token = useAuthorization()
@@ -27,7 +29,7 @@ router.beforeEach(async (to, _, next) => {
         await userStore.getUserInfo()
         // 获取路由菜单的信息
         const currentRoute = await userStore.generateDynamicRoutes()
-        await router.addRoute(currentRoute)
+        router.addRoute(currentRoute)
         next({
           ...to,
           replace: true,
