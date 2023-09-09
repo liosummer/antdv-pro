@@ -1,21 +1,22 @@
-export interface LoginParams {
-  username: string
-  password: string
-  type?: 'account'
-}
+import type { ClientType, LoginType } from '~#/login-enum.ts'
 
-export interface LoginMobileParams {
-  mobile: string
-  code: string
-  type: 'mobile'
+export interface LoginParams {
+  loginName: string
+  credential: string
+  loginType: LoginType
+  clientType: ClientType
+  imageCode?: string
+  imageId?: string
+  remember?: boolean
 }
 
 export interface LoginResultModel {
-  token: string
+  accessToken: string
+  loginTime: string
 }
 
-export const loginApi = (params: LoginParams | LoginMobileParams) => {
-  return usePost<LoginResultModel, LoginParams | LoginMobileParams>('/login', params, {
+export const loginApi = (params: LoginParams) => {
+  return usePost<LoginResultModel, LoginParams>('/auth/login', params, {
     // 设置为false的时候不会携带token
     token: false,
     // 开发模式下使用自定义的接口

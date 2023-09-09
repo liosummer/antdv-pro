@@ -1,24 +1,34 @@
 <script setup lang="ts">
-import { AlipayCircleFilled, LockOutlined, MobileOutlined, TaobaoCircleFilled, UserOutlined, WeiboCircleFilled } from '@ant-design/icons-vue'
+import {
+  AlipayCircleFilled,
+  LockOutlined,
+  MobileOutlined,
+  TaobaoCircleFilled,
+  UserOutlined,
+  WeiboCircleFilled,
+} from '@ant-design/icons-vue'
 import { delayTimer } from '@v-c/utils'
 import { AxiosError } from 'axios'
-import GlobalLayoutFooter from '~/layouts/components/global-footer/index.vue'
-import { loginApi } from '~/api/common/login'
-import { getQueryParam } from '~/utils/tools'
-import type { LoginMobileParams, LoginParams } from '~@/api/common/login'
 import pageBubble from '@/utils/page-bubble'
+import { ClientType, LoginType } from '~#/login-enum.ts'
+import { loginApi } from '~/api/common/login'
+import GlobalLayoutFooter from '~/layouts/components/global-footer/index.vue'
+import { getQueryParam } from '~/utils/tools'
+import type { LoginParams } from '~@/api/common/login'
+
 const message = useMessage()
 const notification = useNotification()
 const appStore = useAppStore()
 const { layoutSetting } = storeToRefs(appStore)
 const router = useRouter()
 const token = useAuthorization()
-const loginModel = reactive({
-  username: undefined,
-  password: undefined,
-  mobile: undefined,
-  code: undefined,
-  type: 'account',
+const loginModel = reactive<LoginParams>({
+  loginName: '',
+  credential: '',
+  loginType: LoginType.USERNAME_PASSWORD,
+  clientType: ClientType.PC,
+  imageCode: '',
+  imageId: '',
   remember: true,
 })
 const { t } = useI18nLocale()
@@ -58,23 +68,8 @@ const submit = async () => {
   submitLoading.value = true
   try {
     await formRef.value?.validate()
-    let params: LoginParams | LoginMobileParams
-
-    if (loginModel.type === 'account') {
-      params = {
-        username: loginModel.username,
-        password: loginModel.password,
-      } as unknown as LoginParams
-    }
-    else {
-      params = {
-        mobile: loginModel.mobile,
-        code: loginModel.code,
-        type: 'mobile',
-      } as unknown as LoginMobileParams
-    }
-    const { data } = await loginApi(params)
-    token.value = data?.token
+    const { data } = await loginApi(loginModel)
+    token.value = data?.accessToken
     notification.success({
       message: '登录成功',
       description: '欢迎回来！',
@@ -156,23 +151,23 @@ onBeforeUnmount(() => {
               {{ t('pages.login.tips') }}
             </div>
             <a-form ref="formRef" :model="loginModel">
-              <a-tabs v-model:activeKey="loginModel.type" centered>
-                <a-tab-pane key="account" :tab="t('pages.login.accountLogin.tab')" />
-                <a-tab-pane key="mobile" :tab="t('pages.login.phoneLogin.tab')" />
+              <a-tabs v-model:activeKey="loginModel.loginType" centered>
+                <a-tab-pane :key="LoginType.USERNAME_PASSWORD" :tab="t('pages.login.accountLogin.tab')" />
+                <a-tab-pane :key="LoginType.PHONE_MESSAGE_CODE" :tab="t('pages.login.phoneLogin.tab')" />
               </a-tabs>
               <!-- 判断是否存在error -->
               <a-alert
-                v-if="errorAlert && loginModel.type === 'account'" mb-24px
+                v-if="errorAlert && loginModel.loginType === LoginType.USERNAME_PASSWORD" mb-24px
                 :message="t('pages.login.accountLogin.errorMessage')" type="error" show-icon
               />
               <a-alert
-                v-if="errorAlert && loginModel.type === 'mobile'" mb-24px
+                v-if="errorAlert && loginModel.loginType === LoginType.USERNAME_PASSWORD" mb-24px
                 :message="t('pages.login.phoneLogin.errorMessage')" type="error" show-icon
               />
-              <template v-if="loginModel.type === 'account'">
-                <a-form-item name="username" :rules="[{ required: true, message: t('pages.login.username.required') }]">
+              <template v-if="loginModel.loginType === LoginType.USERNAME_PASSWORD">
+                <a-form-item name="loginName" :rules="[{ required: true, message: t('pages.login.username.required') }]">
                   <a-input
-                    v-model:value="loginModel.username" allow-clear
+                    v-model:value="loginModel.loginName" allow-clear
                     :placeholder="t('pages.login.username.placeholder')" size="large" @press-enter="submit"
                   >
                     <template #prefix>
@@ -180,9 +175,9 @@ onBeforeUnmount(() => {
                     </template>
                   </a-input>
                 </a-form-item>
-                <a-form-item name="password" :rules="[{ required: true, message: t('pages.login.password.required') }]">
+                <a-form-item name="credential" :rules="[{ required: true, message: t('pages.login.password.required') }]">
                   <a-input-password
-                    v-model:value="loginModel.password" allow-clear
+                    v-model:value="loginModel.credential" allow-clear
                     :placeholder="t('pages.login.password.placeholder')" size="large" @press-enter="submit"
                   >
                     <template #prefix>
@@ -191,9 +186,9 @@ onBeforeUnmount(() => {
                   </a-input-password>
                 </a-form-item>
               </template>
-              <template v-if="loginModel.type === 'mobile'">
+              <template v-if="loginModel.loginType === LoginType.PHONE_MESSAGE_CODE">
                 <a-form-item
-                  name="mobile" :rules="[
+                  name="loginName" :rules="[
                     { required: true, message: t('pages.login.phoneNumber.required') },
                     {
                       pattern: /^(86)?1([38][0-9]|4[579]|5[0-35-9]|6[6]|7[0135678]|9[89])[0-9]{8}$/,
@@ -202,7 +197,7 @@ onBeforeUnmount(() => {
                   ]"
                 >
                   <a-input
-                    v-model:value="loginModel.mobile" allow-clear
+                    v-model:value="loginModel.loginName" allow-clear
                     :placeholder="t('pages.login.phoneNumber.placeholder')" size="large" @press-enter="submit"
                   >
                     <template #prefix>
@@ -210,10 +205,10 @@ onBeforeUnmount(() => {
                     </template>
                   </a-input>
                 </a-form-item>
-                <a-form-item name="code" :rules="[{ required: true, message: t('pages.login.captcha.required') }]">
+                <a-form-item name="credential" :rules="[{ required: true, message: t('pages.login.captcha.required') }]">
                   <div flex items-center>
                     <a-input
-                      v-model:value="loginModel.code"
+                      v-model:value="loginModel.credential"
                       style="flex: 1 1 0%; transition: width 0.3s ease 0s; margin-right: 8px;" allow-clear
                       :placeholder="t('pages.login.captcha.placeholder')" size="large" @press-enter="submit"
                     >
